@@ -2,14 +2,16 @@
 
 import { useState, useEffect } from 'react';
 import { PageLayout } from './page-layout.js';
-import { ClockIcon, ZapIcon, KeyIcon, MessageIcon, GitBranchIcon } from './icons.js';
+import { UserIcon, ClockIcon, ZapIcon, KeyIcon, MessageIcon, GitBranchIcon, SettingsIcon } from './icons.js';
 
 const TABS = [
-  { id: 'crons', label: 'Crons', href: '/settings/crons', icon: ClockIcon },
-  { id: 'triggers', label: 'Triggers', href: '/settings/triggers', icon: ZapIcon },
-  { id: 'api-keys', label: 'API Keys', href: '/settings/api-keys', icon: KeyIcon },
-  { id: 'chat', label: 'Chat', href: '/settings/chat', icon: MessageIcon },
-  { id: 'github', label: 'GitHub', href: '/settings/github', icon: GitBranchIcon },
+  { id: 'general', label: 'General', href: '/admin/general', icon: SettingsIcon },
+  { id: 'users', label: 'Users', href: '/admin/users', icon: UserIcon },
+  { id: 'crons', label: 'Crons', href: '/admin/crons', icon: ClockIcon },
+  { id: 'triggers', label: 'Triggers', href: '/admin/triggers', icon: ZapIcon },
+  { id: 'api-keys', label: 'API Keys', href: '/admin/api-keys', icon: KeyIcon },
+  { id: 'chat', label: 'Chat', href: '/admin/chat', icon: MessageIcon },
+  { id: 'github', label: 'GitHub', href: '/admin/github', icon: GitBranchIcon },
 ];
 
 export function SettingsLayout({ session, children }) {
@@ -23,7 +25,7 @@ export function SettingsLayout({ session, children }) {
     <PageLayout session={session}>
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold">Settings</h1>
+        <h1 className="text-2xl font-semibold">Admin</h1>
       </div>
 
       {/* Tab navigation */}

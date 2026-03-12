@@ -26,33 +26,33 @@ const REPO = 'stephengpope/thepopebot';
 const IMAGES = [
   {
     name: 'pi-coding-agent-job',
-    context: 'templates/docker/pi-coding-agent-job',
-    dockerfile: 'templates/docker/pi-coding-agent-job/Dockerfile',
+    context: 'docker/pi-coding-agent-job',
+    dockerfile: 'docker/pi-coding-agent-job/Dockerfile',
   },
   {
     name: 'claude-code-job',
-    context: 'templates/docker/claude-code-job',
-    dockerfile: 'templates/docker/claude-code-job/Dockerfile',
+    context: 'docker/claude-code-job',
+    dockerfile: 'docker/claude-code-job/Dockerfile',
   },
   {
     name: 'claude-code-workspace',
-    context: 'templates/docker/claude-code-workspace',
-    dockerfile: 'templates/docker/claude-code-workspace/Dockerfile',
+    context: 'docker/claude-code-workspace',
+    dockerfile: 'docker/claude-code-workspace/Dockerfile',
   },
   {
     name: 'claude-code-headless',
-    context: 'templates/docker/claude-code-headless',
-    dockerfile: 'templates/docker/claude-code-headless/Dockerfile',
+    context: 'docker/claude-code-headless',
+    dockerfile: 'docker/claude-code-headless/Dockerfile',
   },
   {
     name: 'claude-code-cluster-worker',
-    context: 'templates/docker/claude-code-cluster-worker',
-    dockerfile: 'templates/docker/claude-code-cluster-worker/Dockerfile',
+    context: 'docker/claude-code-cluster-worker',
+    dockerfile: 'docker/claude-code-cluster-worker/Dockerfile',
   },
   {
     name: 'event-handler',
     context: '.',
-    dockerfile: 'templates/docker/event-handler/Dockerfile',
+    dockerfile: 'docker/event-handler/Dockerfile',
   },
 ];
 

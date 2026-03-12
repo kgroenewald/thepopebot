@@ -158,7 +158,7 @@ function mirrorTemplates(projectPath) {
 function buildDockerImage(projectPath) {
   console.log('\n  Building Docker event handler image...');
 
-  const dockerfilePath = path.join(projectPath, 'docker', 'event-handler', 'Dockerfile');
+  const dockerfilePath = path.join(PACKAGE_DIR, 'docker', 'event-handler', 'Dockerfile');
   let dockerfile = fs.readFileSync(dockerfilePath, 'utf8');
 
   // Add COPY for tarball after the package.json COPY line in builder stage
@@ -172,9 +172,6 @@ function buildDockerImage(projectPath) {
     /RUN npm install --omit=dev && \\\n\s+npm install --no-save thepopebot@\$\(node -p "require\('\.\/package\.json'\)\.version"\)/,
     'RUN npm install --omit=dev && \\\n    npm install --no-save /tmp/thepopebot.tgz && rm /tmp/thepopebot.tgz'
   );
-
-  // Fix template paths for project context (templates/docker/... → docker/...)
-  dockerfile = dockerfile.replace(/COPY templates\//g, 'COPY ');
 
   // Read version from package.json
   const pkg = JSON.parse(fs.readFileSync(path.join(PACKAGE_DIR, 'package.json'), 'utf8'));

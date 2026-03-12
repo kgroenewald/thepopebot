@@ -16,9 +16,9 @@ All tagged `stephengpope/thepopebot:{tag}-{version}`:
 
 `docker-compose.yml` runs: Traefik (reverse proxy), event-handler, self-hosted GitHub runner. Job containers are NOT in compose — created on-demand by `run-job.yml` workflow.
 
-## Managed
+## Internal Only
 
-The entire `docker/` directory is managed — auto-synced on upgrade. All Dockerfiles, entrypoints, and this CLAUDE.md are overwritten by `init` to match the package version.
+This directory is build infrastructure — NOT published to npm, NOT scaffolded to user projects. CI/CD (`publish-npm.yml`) and local dev (`npm run docker:build`, `thepopebot sync`) use these files to build Docker images. Users pull pre-built images from Docker Hub.
 
 ## Secrets Flow
 

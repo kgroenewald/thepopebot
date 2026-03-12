@@ -28,6 +28,13 @@ RUN useradd -m -s /bin/bash agent \
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
+# Install Playwright's Chromium at build time (used by Playwright MCP)
+# PLAYWRIGHT_BROWSERS_PATH must be a shared location (not ~/.cache) so the
+# non-root `agent` user can find browsers installed by root during build.
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+RUN npx -y playwright install chromium \
+    && chown -R agent:agent /ms-playwright
+
 USER agent
 WORKDIR /job
 

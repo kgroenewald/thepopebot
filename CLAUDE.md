@@ -10,7 +10,7 @@ The npm package (`api/`, `lib/`, `config/`, `bin/`) is published to npm. In prod
 
 - **Event handler**: Docker container installs the published package from npm. The user's project (`config/`, `skills/`, `.env`, `data/`) is volume-mounted at `/app`. Runs `server.js` via PM2 behind Traefik reverse proxy.
 - **`lib/paths.js`**: Central path resolver — ALL paths resolve from `process.cwd()`. This is how the installed npm package finds the volume-mounted user project files.
-- **Job containers**: Ephemeral Docker containers clone `job/*` branches separately — NOT volume-mounted. See `templates/docker/CLAUDE.md`.
+- **Job containers**: Ephemeral Docker containers clone `job/*` branches separately — NOT volume-mounted. See `docker/CLAUDE.md`.
 - **Local install**: Gives users CLI tools (`init`, `setup`, `upgrade`) and thin Next.js wiring for dev.
 
 ## Package vs. Templates — Where Code Goes
@@ -23,7 +23,7 @@ The `templates/` directory contains **only files that get scaffolded into user p
 - Configuration files users edit (`config/SOUL.md`, `config/CRONS.json`, etc.)
 - Thin Next.js wiring (`next.config.mjs`, `instrumentation.js`, catch-all route)
 - GitHub Actions workflows
-- Docker files
+- Docker compose (`docker-compose.yml`)
 - CLAUDE.md files for AI assistant context in user projects
 
 ### Managed Paths
@@ -31,7 +31,6 @@ The `templates/` directory contains **only files that get scaffolded into user p
 Files in managed directories are auto-synced (created, updated, **and deleted**) by `init` to match the package templates exactly. Users should not edit these files — changes will be overwritten on upgrade. Managed paths are defined in `bin/managed-paths.js`:
 
 - `.github/workflows/` — CI/CD workflows
-- `docker/` — All Docker files (Dockerfiles, entrypoints, CLAUDE.md)
 - `docker-compose.yml`, `.dockerignore` — Docker config
 - `CLAUDE.md` — AI assistant context
 - `app/` — All Next.js pages, layouts, and routes
@@ -122,7 +121,7 @@ Both use `lib/tools/docker.js` for container lifecycle via Unix socket API.
 
 ## Skills System
 
-Plugin directories under `skills/`. Activate by symlinking into `skills/active/`. Each skill has `SKILL.md` with YAML frontmatter (`name`, `description`). The `{{skills}}` template variable in markdown files resolves active skill descriptions at runtime. Default active skills: `browser-tools`, `llm-secrets`, `modify-self`.
+Plugin directories under `skills/`. Activate by symlinking into `skills/active/`. Each skill has `SKILL.md` with YAML frontmatter (`name`, `description`). The `{{skills}}` template variable in markdown files resolves active skill descriptions at runtime. Default active skills: `llm-secrets`, `modify-self`.
 
 ## Template Config & Markdown Includes
 

@@ -354,6 +354,10 @@ async function init() {
 AUTH_SECRET=${authSecret}
 AUTH_TRUST_HOST=true
 THEPOPEBOT_VERSION=${version}
+
+# Uncomment to use a custom docker-compose file that won't be overwritten by upgrades.
+# Edit docker-compose.custom.yml with your changes, then uncomment:
+# COMPOSE_FILE=docker-compose.custom.yml
 `;
     fs.writeFileSync(envPath, seedEnv);
     console.log(`  Created .env (AUTH_SECRET, THEPOPEBOT_VERSION=${version})`);

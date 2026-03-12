@@ -35,7 +35,9 @@ project-root/
 │   └── TRIGGERS.json                  # Webhook trigger definitions
 │
 ├── .github/workflows/                 # GitHub Actions
-├── docker/                            # Docker files (job agent + event handler)
+├── docker-compose.yml                 # Docker Compose config (MANAGED)
+├── docker-compose.custom.yml          # User-owned compose overrides (not managed)
+├── traefik-dynamic.yml.example        # Traefik TLS config template (not managed)
 ├── skills/                            # All available agent skills
 │   └── active/                        # Symlinks to active skills (shared by Pi + Claude Code)
 ├── .pi/skills → skills/active         # Pi reads skills from here
@@ -219,7 +221,7 @@ All API routes are under `/api/`, handled by the catch-all route.
 
 ## Web Interface
 
-Accessible after login at `APP_URL`. Routes: `/` (chat), `/chats` (history), `/chat/[chatId]` (resume chat), `/settings/crons`, `/settings/triggers`, `/settings/secrets` (API keys), `/runners` (job monitor), `/notifications`, `/login` (auth / first-time admin setup).
+Accessible after login at `APP_URL`. Routes: `/` (chat), `/chats` (history), `/chat/[chatId]` (resume chat), `/admin` (admin panel — users, crons, triggers, API keys, chat, GitHub), `/profile` (self-service email/password), `/runners` (job monitor), `/notifications`, `/login` (auth / first-time admin setup).
 
 ## Authentication
 
@@ -288,10 +290,13 @@ SQLite via Drizzle ORM at `data/thepopebot.sqlite`. Auto-initialized and auto-mi
 | `GOOGLE_API_KEY` | Google API key | For google provider |
 | `CUSTOM_API_KEY` | Custom provider API key | For custom provider |
 | `DATABASE_PATH` | Override SQLite DB location | No |
+| `COMPOSE_FILE` | Override which docker-compose file to use (e.g. `docker-compose.custom.yml`) | No |
 
 ## Managed Files
 
-The following directories are auto-synced by `thepopebot init` and `thepopebot upgrade`. **Do not edit them** — changes will be overwritten on package updates: `.github/workflows/`, `docker/event-handler/`, `docker-compose.yml`, `.dockerignore`, `CLAUDE.md`, `app/`.
+The following directories are auto-synced by `thepopebot init` and `thepopebot upgrade`. **Do not edit them** — changes will be overwritten on package updates: `.github/workflows/`, `docker-compose.yml`, `.dockerignore`, `CLAUDE.md`, `app/`.
+
+To customize Docker Compose config without losing changes on upgrade, set `COMPOSE_FILE=docker-compose.custom.yml` in `.env`. The custom file is scaffolded by init but never overwritten.
 
 All UI components live in the npm package — `app/` only contains thin page shells that import from `thepopebot/chat`, `thepopebot/auth/components`, etc.
 
@@ -300,6 +305,8 @@ All UI components live in the npm package — `app/` only contains thin page she
 User-editable config files in `config/`: `SOUL.md` (personality), `JOB_PLANNING.md` (LLM system prompt), `JOB_AGENT.md` (runtime docs), `JOB_SUMMARY.md` (job summaries), `HEARTBEAT.md` (self-monitoring), `SKILL_BUILDING_GUIDE.md` (skill guide), `CRONS.json` (scheduled jobs), `TRIGGERS.json` (webhook triggers).
 
 To customize appearance, edit `theme.css` in the project root (loaded after `globals.css`, user-owned, not managed).
+
+To customize Docker Compose (TLS, ports, volumes, extra services), edit `docker-compose.custom.yml` and set `COMPOSE_FILE=docker-compose.custom.yml` in `.env`. For Tailscale TLS, copy `traefik-dynamic.yml.example` to `traefik-dynamic.yml` and follow the instructions inside.
 
 Skills in `skills/` are activated by symlinking into `skills/active/`. Both `.pi/skills` and `.claude/skills` point to `skills/active/`. Scripts for command-type actions go in `cron/` and `triggers/`.
 

@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
 
 export default function TriggersRoute() {
-  redirect('/settings/triggers');
+  redirect('/admin/triggers');
 }

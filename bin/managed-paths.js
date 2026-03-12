@@ -4,7 +4,7 @@
 // Paths ending with '/' are directories (all contents are managed).
 export const MANAGED_PATHS = [
   '.github/workflows/',
-  'docker/',
+
   'docker-compose.yml',
   '.dockerignore',
   'CLAUDE.md',

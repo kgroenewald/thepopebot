@@ -46,3 +46,7 @@ data/
 
 # Backups (created by init before overwriting managed files)
 .backups/
+
+# Custom docker-compose and Traefik config (local overrides, not managed)
+docker-compose.custom.yml
+traefik-dynamic.yml

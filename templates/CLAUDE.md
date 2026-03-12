@@ -13,7 +13,7 @@ This directory contains files that get copied into user projects when they run `
 - **Next.js wiring**: `next.config.mjs`, `instrumentation.js`, catch-all route, middleware — thin re-exports from `thepopebot/*`
 - **User-editable config**: `config/SOUL.md`, `config/JOB_PLANNING.md`, `config/CRONS.json`, `config/TRIGGERS.json`, etc.
 - **GitHub Actions workflows**: `.github/workflows/`
-- **Docker files**: `docker/`, `docker-compose.yml`
+- **Docker compose**: `docker-compose.yml`
 - **UI page shells**: `app/` pages that import components from the package (managed — auto-synced on upgrade)
 - **User CSS overrides**: `theme.css` (user-owned, not managed)
 
@@ -31,4 +31,4 @@ If you're adding a feature to the event handler, put it in the package. Template
 
 ## Managed vs. User-Owned
 
-Files inside managed paths (`app/`, `.github/workflows/`, `docker/event-handler/`, etc.) are auto-synced by `init` — stale files are deleted, changed files are overwritten. Never add user-editable content to managed paths. User customization goes in `config/` or `theme.css`.
+Files inside managed paths (`app/`, `.github/workflows/`, etc.) are auto-synced by `init` — stale files are deleted, changed files are overwritten. Never add user-editable content to managed paths. User customization goes in `config/` or `theme.css`.

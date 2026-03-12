@@ -44,22 +44,23 @@ export function SubTabLayout({ tabs, children }) {
 // Pre-configured layouts for each top-level tab
 
 const API_KEYS_TABS = [
-  { id: 'keys', label: 'Keys', href: '/settings/api-keys/keys' },
+  { id: 'webhooks', label: 'Webhooks', href: '/admin/api-keys/webhooks' },
+  { id: 'voice', label: 'Voice', href: '/admin/api-keys/voice' },
 ];
 
 const CHAT_TABS = [
-  { id: 'llm', label: 'LLM', href: '/settings/chat/llm' },
-  { id: 'telegram', label: 'Telegram', href: '/settings/chat/telegram' },
+  { id: 'llm', label: 'LLM', href: '/admin/chat/llm' },
+  { id: 'telegram', label: 'Telegram', href: '/admin/chat/telegram' },
 ];
 
 const GITHUB_TABS = [
-  { id: 'tokens', label: 'Tokens', href: '/settings/github/tokens' },
-  { id: 'secrets', label: 'Secrets', href: '/settings/github/secrets' },
-  { id: 'variables', label: 'Variables', href: '/settings/github/variables' },
+  { id: 'tokens', label: 'Tokens', href: '/admin/github/tokens' },
+  { id: 'secrets', label: 'Secrets', href: '/admin/github/secrets' },
+  { id: 'variables', label: 'Variables', href: '/admin/github/variables' },
 ];
 
 export function ApiKeysLayout({ children }) {
-  return <div>{children}</div>;
+  return <SubTabLayout tabs={API_KEYS_TABS}>{children}</SubTabLayout>;
 }
 
 export function ChatSettingsLayout({ children }) {

@@ -339,6 +339,61 @@ function CopyButton({ text }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Voice sub-tab — AssemblyAI API Key
+// ─────────────────────────────────────────────────────────────────────────────
+
+export function ApiKeysVoicePage() {
+  const [settings, setSettings] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  const loadSettings = async () => {
+    try {
+      const result = await getApiKeySettings();
+      setSettings(result);
+    } catch {
+      // ignore
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadSettings();
+  }, []);
+
+  const getStatus = (key) => settings?.secrets?.find((s) => s.key === key)?.isSet || false;
+
+  const handleSave = async (key, value) => {
+    setSaving(true);
+    await updateApiKeySetting(key, value);
+    await loadSettings();
+    setSaving(false);
+  };
+
+  if (loading) {
+    return <div className="h-24 animate-pulse rounded-md bg-border/50" />;
+  }
+
+  return (
+    <div>
+      <div className="mb-4">
+        <h2 className="text-base font-medium">Voice</h2>
+        <p className="text-sm text-muted-foreground">Required for voice input in chat.</p>
+      </div>
+      <div className="rounded-lg border bg-card p-4">
+        <SecretRow
+          label="AssemblyAI API Key"
+          isSet={getStatus('ASSEMBLYAI_API_KEY')}
+          saving={saving}
+          onSave={(val) => handleSave('ASSEMBLYAI_API_KEY', val)}
+        />
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // GitHub sub-tab — GH_TOKEN + GH_WEBHOOK_SECRET
 // ─────────────────────────────────────────────────────────────────────────────
 

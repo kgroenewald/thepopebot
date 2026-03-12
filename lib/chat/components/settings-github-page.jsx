@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { CheckIcon, PlusIcon, KeyIcon } from './icons.js';
 import {
   getGitHubConfig,
@@ -12,10 +12,55 @@ import {
 } from '../actions.js';
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Secret grouping & help text
+// ─────────────────────────────────────────────────────────────────────────────
+
+const SECRET_HELP = {
+  GH_WEBHOOK_SECRET: 'Authenticates webhook callbacks from GitHub Actions workflows back to the event handler.',
+  AGENT_GH_TOKEN: 'GitHub token for creating branches and pull requests during agent jobs.',
+  AGENT_ANTHROPIC_API_KEY: 'Anthropic API key for running LLM calls during agent jobs.',
+  AGENT_OPENAI_API_KEY: 'OpenAI API key for running LLM calls during agent jobs.',
+  AGENT_GOOGLE_API_KEY: 'Google AI API key for running LLM calls during agent jobs.',
+  AGENT_CUSTOM_API_KEY: 'API key for custom/self-hosted LLM providers during agent jobs.',
+  AGENT_CLAUDE_CODE_OAUTH_TOKEN: 'OAuth token for the Claude Code agent backend.',
+  AGENT_LLM_BRAVE_API_KEY: 'Brave Search API key — enables web search during agent jobs.',
+};
+
+function getSecretHelp(name) {
+  if (SECRET_HELP[name]) return SECRET_HELP[name];
+  if (name.startsWith('AGENT_LLM_')) return 'Made available to the LLM as a tool credential during agent jobs.';
+  if (name.startsWith('AGENT_')) return 'Passed to the agent container as an environment variable during jobs.';
+  return 'Used by GitHub Actions workflows running on the repository.';
+}
+
+function getSecretGroup(name) {
+  if (name.startsWith('AGENT_LLM_')) return 'llm';
+  if (name.startsWith('AGENT_')) return 'agent';
+  return 'non-agent';
+}
+
+const GROUP_META = {
+  'non-agent': {
+    title: 'Non-Agent Secrets',
+    description: 'Used by GitHub Actions workflows. Not passed to agent containers.',
+  },
+  agent: {
+    title: 'Agent Secrets',
+    description: 'Passed to the agent container as environment variables during jobs.',
+  },
+  llm: {
+    title: 'Agent LLM Secrets',
+    description: 'Made available to the LLM as tool credentials during agent jobs.',
+  },
+};
+
+const GROUP_ORDER = ['non-agent', 'agent', 'llm'];
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Shared row components
 // ─────────────────────────────────────────────────────────────────────────────
 
-function SecretRow({ name, label, onUpdate }) {
+function SecretRow({ name, helpText, onUpdate }) {
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState('');
   const [saving, setSaving] = useState(false);
@@ -42,8 +87,8 @@ function SecretRow({ name, label, onUpdate }) {
     return (
       <div className="flex flex-col gap-2 py-3">
         <div>
-          <div className="text-sm font-medium">{label}</div>
-          <div className="text-xs text-muted-foreground font-mono">{name}</div>
+          <div className="text-sm font-medium font-mono">{name}</div>
+          {helpText && <p className="text-xs text-muted-foreground mt-0.5">{helpText}</p>}
         </div>
         {error && <p className="text-xs text-destructive">{error}</p>}
         <div className="flex items-center gap-2">
@@ -70,13 +115,13 @@ function SecretRow({ name, label, onUpdate }) {
   }
 
   return (
-    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between py-3">
-      <div>
-        <div className="text-sm font-medium">{label}</div>
-        <div className="text-xs text-muted-foreground font-mono">{name}</div>
+    <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between py-3">
+      <div className="min-w-0">
+        <div className="text-sm font-medium font-mono">{name}</div>
+        {helpText && <p className="text-xs text-muted-foreground mt-0.5">{helpText}</p>}
       </div>
       <button onClick={() => setEditing(true)}
-        className={`rounded-md px-2.5 py-1.5 text-xs font-medium border shrink-0 self-start sm:self-auto ${
+        className={`rounded-md px-2.5 py-1.5 text-xs font-medium border shrink-0 self-start ${
           saved ? 'border-green-500 text-green-600' : 'border-border text-muted-foreground hover:bg-accent hover:text-foreground'
         }`}>
         {saved ? <span className="inline-flex items-center gap-1"><CheckIcon size={12} /> Saved</span> : 'Set'}
@@ -85,7 +130,7 @@ function SecretRow({ name, label, onUpdate }) {
   );
 }
 
-function VariableRow({ name, label, onUpdate }) {
+function VariableRow({ name, onUpdate }) {
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState('');
   const [saving, setSaving] = useState(false);
@@ -109,10 +154,7 @@ function VariableRow({ name, label, onUpdate }) {
   if (editing) {
     return (
       <div className="flex flex-col gap-2 py-3">
-        <div>
-          <div className="text-sm font-medium">{label}</div>
-          <div className="text-xs text-muted-foreground font-mono">{name}</div>
-        </div>
+        <div className="text-sm font-medium font-mono">{name}</div>
         {error && <p className="text-xs text-destructive">{error}</p>}
         <div className="flex items-center gap-2">
           <input type="text" value={value} onChange={(e) => setValue(e.target.value)}
@@ -134,10 +176,7 @@ function VariableRow({ name, label, onUpdate }) {
 
   return (
     <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between py-3">
-      <div>
-        <div className="text-sm font-medium">{label}</div>
-        <div className="text-xs text-muted-foreground font-mono">{name}</div>
-      </div>
+      <div className="text-sm font-medium font-mono">{name}</div>
       <button onClick={() => setEditing(true)}
         className={`rounded-md px-2.5 py-1.5 text-xs font-medium border shrink-0 self-start sm:self-auto ${
           saved ? 'border-green-500 text-green-600' : 'border-border text-muted-foreground hover:bg-accent hover:text-foreground'
@@ -149,72 +188,207 @@ function VariableRow({ name, label, onUpdate }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Add custom secret/variable form
+// Add item dialogs
 // ─────────────────────────────────────────────────────────────────────────────
 
-function AddItemForm({ type, onAdd, onCancel }) {
+const SECRET_TYPES = [
+  { value: 'non-agent', label: 'Non-Agent Secret', prefix: '', description: 'Used by GitHub Actions workflows. Not passed to agent containers.' },
+  { value: 'agent', label: 'Agent Secret', prefix: 'AGENT_', description: 'Passed to the agent container as an environment variable during jobs.' },
+  { value: 'llm', label: 'Agent LLM Secret', prefix: 'AGENT_LLM_', description: 'Made available to the LLM as a tool credential during agent jobs.' },
+];
+
+function AddSecretDialog({ open, onAdd, onCancel }) {
+  const [secretType, setSecretType] = useState('non-agent');
   const [name, setName] = useState('');
   const [value, setValue] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
+  const nameRef = useRef(null);
 
-  const isSecret = type === 'secret';
+  const typeInfo = SECRET_TYPES.find((t) => t.value === secretType);
+
+  useEffect(() => {
+    if (open) {
+      setSecretType('non-agent');
+      setName('');
+      setValue('');
+      setError(null);
+      setSaving(false);
+      setTimeout(() => nameRef.current?.focus(), 50);
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') onCancel();
+    };
+    document.addEventListener('keydown', handleEsc);
+    return () => document.removeEventListener('keydown', handleEsc);
+  }, [open, onCancel]);
+
+  if (!open) return null;
+
+  const fullName = typeInfo.prefix + name.trim().toUpperCase();
+
+  const handleSave = async () => {
+    if (!name.trim() || !value) return;
+    setSaving(true);
+    setError(null);
+    const result = await onAdd(fullName, value);
+    setSaving(false);
+    if (result?.success) {
+      onCancel();
+    } else {
+      setError(result?.error || 'Failed to add secret');
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="fixed inset-0 bg-black/50" onClick={onCancel} />
+      <div className="relative z-50 w-full max-w-md mx-4 rounded-lg border border-border bg-background p-6 shadow-lg" onClick={(e) => e.stopPropagation()}>
+        <h3 className="text-base font-semibold mb-4">Add Secret</h3>
+        <div className="space-y-3">
+          <div>
+            <label className="text-xs font-medium mb-1 block">Type</label>
+            <select
+              value={secretType}
+              onChange={(e) => setSecretType(e.target.value)}
+              className="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-foreground"
+            >
+              {SECRET_TYPES.map((t) => (
+                <option key={t.value} value={t.value}>{t.label}</option>
+              ))}
+            </select>
+            <p className="text-xs text-muted-foreground mt-1">{typeInfo.description}</p>
+          </div>
+          <div>
+            <label className="text-xs font-medium mb-1 block">Name</label>
+            <div className="flex items-center gap-0">
+              {typeInfo.prefix && (
+                <span className="rounded-l-md border border-r-0 border-border bg-muted px-2.5 py-1.5 text-sm font-mono text-muted-foreground">
+                  {typeInfo.prefix}
+                </span>
+              )}
+              <input
+                ref={nameRef}
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value.toUpperCase().replace(/[^A-Z0-9_]/g, ''))}
+                placeholder="MY_SECRET"
+                className={`flex-1 border border-border bg-background px-3 py-1.5 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-foreground ${
+                  typeInfo.prefix ? 'rounded-r-md' : 'rounded-md'
+                }`}
+                onKeyDown={(e) => e.key === 'Enter' && handleSave()}
+              />
+            </div>
+            {name.trim() && (
+              <p className="text-xs text-muted-foreground mt-1 font-mono">{fullName}</p>
+            )}
+          </div>
+          <div>
+            <label className="text-xs font-medium mb-1 block">Value</label>
+            <input
+              type="password"
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              placeholder="Enter value..."
+              className="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-foreground"
+              onKeyDown={(e) => e.key === 'Enter' && handleSave()}
+            />
+          </div>
+          {error && <p className="text-xs text-destructive">{error}</p>}
+        </div>
+        <div className="flex justify-end gap-2 mt-5">
+          <button onClick={onCancel} className="rounded-md px-3 py-1.5 text-sm font-medium border border-border text-muted-foreground hover:text-foreground">Cancel</button>
+          <button onClick={handleSave} disabled={!name.trim() || !value || saving}
+            className="rounded-md px-3 py-1.5 text-sm font-medium bg-foreground text-background hover:bg-foreground/90 disabled:opacity-50">
+            {saving ? 'Saving...' : 'Save'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AddVariableDialog({ open, onAdd, onCancel }) {
+  const [name, setName] = useState('');
+  const [value, setValue] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+  const nameRef = useRef(null);
+
+  useEffect(() => {
+    if (open) {
+      setName('');
+      setValue('');
+      setError(null);
+      setSaving(false);
+      setTimeout(() => nameRef.current?.focus(), 50);
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') onCancel();
+    };
+    document.addEventListener('keydown', handleEsc);
+    return () => document.removeEventListener('keydown', handleEsc);
+  }, [open, onCancel]);
+
+  if (!open) return null;
 
   const handleSave = async () => {
     const trimmedName = name.trim().toUpperCase();
-    if (!trimmedName || (!value && isSecret)) return;
+    if (!trimmedName) return;
     setSaving(true);
     setError(null);
     const result = await onAdd(trimmedName, value);
     setSaving(false);
     if (result?.success) {
-      setName('');
-      setValue('');
       onCancel();
     } else {
-      setError(result?.error || `Failed to add ${type}`);
+      setError(result?.error || 'Failed to add variable');
     }
   };
 
   return (
-    <div className="rounded-lg border border-dashed bg-card p-4 mb-4">
-      <div className="flex flex-col gap-3">
-        <div>
-          <label className="text-xs font-medium mb-1.5 block">Name</label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value.toUpperCase())}
-            placeholder={isSecret ? 'e.g. AGENT_MY_SECRET' : 'e.g. MY_VARIABLE'}
-            autoFocus
-            className="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-foreground"
-          />
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="fixed inset-0 bg-black/50" onClick={onCancel} />
+      <div className="relative z-50 w-full max-w-md mx-4 rounded-lg border border-border bg-background p-6 shadow-lg" onClick={(e) => e.stopPropagation()}>
+        <h3 className="text-base font-semibold mb-4">Add Variable</h3>
+        <div className="space-y-3">
+          <div>
+            <label className="text-xs font-medium mb-1 block">Name</label>
+            <input
+              ref={nameRef}
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value.toUpperCase().replace(/[^A-Z0-9_]/g, ''))}
+              placeholder="e.g. MY_VARIABLE"
+              className="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-foreground"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-medium mb-1 block">Value</label>
+            <input
+              type="text"
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              placeholder="Enter value..."
+              className="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-foreground"
+              onKeyDown={(e) => e.key === 'Enter' && handleSave()}
+            />
+          </div>
+          {error && <p className="text-xs text-destructive">{error}</p>}
         </div>
-        <div>
-          <label className="text-xs font-medium mb-1.5 block">Value</label>
-          <input
-            type={isSecret ? 'password' : 'text'}
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            placeholder="Enter value..."
-            className={`w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-foreground ${!isSecret ? 'font-mono' : ''}`}
-            onKeyDown={(e) => e.key === 'Enter' && handleSave()}
-          />
-        </div>
-        {error && <p className="text-xs text-destructive">{error}</p>}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleSave}
-            disabled={!name.trim() || (!value && isSecret) || saving}
-            className="rounded-md px-2.5 py-1.5 text-xs font-medium bg-foreground text-background hover:bg-foreground/90 disabled:opacity-50"
-          >
+        <div className="flex justify-end gap-2 mt-5">
+          <button onClick={onCancel} className="rounded-md px-3 py-1.5 text-sm font-medium border border-border text-muted-foreground hover:text-foreground">Cancel</button>
+          <button onClick={handleSave} disabled={!name.trim() || saving}
+            className="rounded-md px-3 py-1.5 text-sm font-medium bg-foreground text-background hover:bg-foreground/90 disabled:opacity-50">
             {saving ? 'Saving...' : 'Save'}
-          </button>
-          <button
-            onClick={onCancel}
-            className="rounded-md px-2.5 py-1.5 text-xs font-medium border border-border text-muted-foreground hover:text-foreground"
-          >
-            Cancel
           </button>
         </div>
       </div>
@@ -415,7 +589,7 @@ export function GitHubTokensPage() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Secrets sub-tab
+// Secrets sub-tab — grouped by type
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function GitHubSecretsPage() {
@@ -432,6 +606,14 @@ export function GitHubSecretsPage() {
     return await updateGitHubSecret(name, value);
   };
 
+  // Group secrets by type
+  const groups = {};
+  for (const s of data.secrets) {
+    const group = getSecretGroup(s.name);
+    if (!groups[group]) groups[group] = [];
+    groups[group].push(s);
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
@@ -439,29 +621,40 @@ export function GitHubSecretsPage() {
           <h2 className="text-base font-medium">Secrets</h2>
           <p className="text-sm text-muted-foreground">Encrypted values stored on GitHub for agent jobs. Values cannot be read back after setting.</p>
         </div>
-        {!showAdd && (
-          <button
-            onClick={() => setShowAdd(true)}
-            className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium bg-foreground text-background hover:bg-foreground/90 shrink-0"
-          >
-            <PlusIcon size={14} />
-            Add secret
-          </button>
-        )}
+        <button
+          onClick={() => setShowAdd(true)}
+          className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium bg-foreground text-background hover:bg-foreground/90 shrink-0"
+        >
+          <PlusIcon size={14} />
+          Add secret
+        </button>
       </div>
-      {showAdd && (
-        <AddItemForm
-          type="secret"
-          onAdd={handleUpdate}
-          onCancel={() => setShowAdd(false)}
-        />
-      )}
-      <div className="rounded-lg border bg-card p-4">
-        <div className="divide-y divide-border">
-          {data.secrets.map((s) => (
-            <SecretRow key={s.name} name={s.name} label={s.label} onUpdate={handleUpdate} />
-          ))}
-        </div>
+      <div className="border-b border-border mb-6" />
+      <AddSecretDialog
+        open={showAdd}
+        onAdd={handleUpdate}
+        onCancel={() => setShowAdd(false)}
+      />
+      <div className="space-y-6">
+        {GROUP_ORDER.filter((g) => groups[g]?.length).map((groupKey) => {
+          const meta = GROUP_META[groupKey];
+          const secrets = groups[groupKey];
+          return (
+            <div key={groupKey}>
+              <div className="mb-2">
+                <h3 className="text-sm font-medium">{meta.title}</h3>
+                <p className="text-xs text-muted-foreground">{meta.description}</p>
+              </div>
+              <div className="rounded-lg border bg-card p-4">
+                <div className="divide-y divide-border">
+                  {secrets.map((s) => (
+                    <SecretRow key={s.name} name={s.name} helpText={getSecretHelp(s.name)} onUpdate={handleUpdate} />
+                  ))}
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -492,27 +685,24 @@ export function GitHubVariablesPage() {
           <h2 className="text-base font-medium">Variables</h2>
           <p className="text-sm text-muted-foreground">Configuration values for agent jobs.</p>
         </div>
-        {!showAdd && (
-          <button
-            onClick={() => setShowAdd(true)}
-            className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium bg-foreground text-background hover:bg-foreground/90 shrink-0"
-          >
-            <PlusIcon size={14} />
-            Add variable
-          </button>
-        )}
+        <button
+          onClick={() => setShowAdd(true)}
+          className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium bg-foreground text-background hover:bg-foreground/90 shrink-0"
+        >
+          <PlusIcon size={14} />
+          Add variable
+        </button>
       </div>
-      {showAdd && (
-        <AddItemForm
-          type="variable"
-          onAdd={handleUpdate}
-          onCancel={() => setShowAdd(false)}
-        />
-      )}
+      <div className="border-b border-border mb-6" />
+      <AddVariableDialog
+        open={showAdd}
+        onAdd={handleUpdate}
+        onCancel={() => setShowAdd(false)}
+      />
       <div className="rounded-lg border bg-card p-4">
         <div className="divide-y divide-border">
           {data.variables.map((v) => (
-            <VariableRow key={v.name} name={v.name} label={v.label} onUpdate={handleUpdate} />
+            <VariableRow key={v.name} name={v.name} onUpdate={handleUpdate} />
           ))}
         </div>
       </div>

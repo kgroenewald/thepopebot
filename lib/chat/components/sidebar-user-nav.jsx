@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from './ui/dropdown-menu.js';
 import { SidebarMenu, SidebarMenuItem, SidebarMenuButton } from './ui/sidebar.js';
-import { SettingsIcon, SunIcon, MoonIcon, BugIcon, LogOutIcon } from './icons.js';
+import { SettingsIcon, UserIcon, SunIcon, MoonIcon, BugIcon, LogOutIcon } from './icons.js';
 import { cn } from '../utils.js';
 
 export function SidebarUserNav({ user, collapsed }) {
@@ -44,11 +44,19 @@ export function SidebarUserNav({ user, collapsed }) {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" side="top" className="w-56">
             <DropdownMenuItem asChild>
-              <a href="/settings" className="w-full flex items-center gap-2" style={{ textDecoration: 'inherit', color: 'inherit' }}>
-                <SettingsIcon size={14} />
-                <span>Settings</span>
+              <a href="/profile" className="w-full flex items-center gap-2" style={{ textDecoration: 'inherit', color: 'inherit' }}>
+                <UserIcon size={14} />
+                <span>Profile</span>
               </a>
             </DropdownMenuItem>
+            {user?.role === 'admin' && (
+              <DropdownMenuItem asChild>
+                <a href="/admin" className="w-full flex items-center gap-2" style={{ textDecoration: 'inherit', color: 'inherit' }}>
+                  <SettingsIcon size={14} />
+                  <span>Admin</span>
+                </a>
+              </DropdownMenuItem>
+            )}
             {mounted && (
               <DropdownMenuItem onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
                 {theme === 'dark' ? <SunIcon size={14} /> : <MoonIcon size={14} />}
