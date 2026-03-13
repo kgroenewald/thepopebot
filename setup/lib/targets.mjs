@@ -15,7 +15,7 @@
  */
 export const CONFIG_TARGETS = {
   // Secrets → DB encrypted (never .env)
-  GH_TOKEN:              { dbSecret: true, secret: 'AGENT_GH_TOKEN' },
+  GH_TOKEN:              { env: true, dbSecret: true, secret: 'AGENT_GH_TOKEN' },
   ANTHROPIC_API_KEY:     { dbSecret: true, secret: 'AGENT_ANTHROPIC_API_KEY' },
   OPENAI_API_KEY:        { dbSecret: true, secret: 'AGENT_OPENAI_API_KEY' },
   GOOGLE_API_KEY:        { dbSecret: true, secret: 'AGENT_GOOGLE_API_KEY' },
