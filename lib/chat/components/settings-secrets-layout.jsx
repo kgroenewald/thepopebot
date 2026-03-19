@@ -52,7 +52,9 @@ const EVENT_HANDLER_TABS = [
   { id: 'llms', label: 'LLMs', href: '/admin/event-handler/llms' },
   { id: 'chat', label: 'Chat', href: '/admin/event-handler/chat' },
   { id: 'coding-agents', label: 'Coding Agents', href: '/admin/event-handler/coding-agents' },
+  { id: 'webhooks', label: 'Webhooks', href: '/admin/event-handler/webhooks' },
   { id: 'telegram', label: 'Telegram', href: '/admin/event-handler/telegram' },
+  { id: 'voice', label: 'Voice', href: '/admin/event-handler/voice' },
 ];
 
 const GITHUB_TABS = [

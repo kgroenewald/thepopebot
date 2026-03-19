@@ -26,6 +26,7 @@
     "./cluster": "./lib/cluster/components/index.js",
     "./cluster/actions": "./lib/cluster/actions.js",
     "./cluster/stream": "./lib/cluster/stream.js",
+    "./containers/stream": "./lib/containers/stream.js",
     "./auth/components": "./lib/auth/components/index.js",
     "./middleware": "./lib/auth/middleware.js",
     "./package.json": "./package.json"

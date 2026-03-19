@@ -145,12 +145,32 @@ function AgentCards({ settings, onReload }) {
 function ClaudeCodeCard({ settings, onReload }) {
   const config = settings.claudeCode;
   const ready = isClaudeCodeReady(settings);
+  const backend = config.backend || 'anthropic';
 
-  // Anthropic models available for coding agents
-  const anthropicModels = getAgentModels(settings, 'anthropic');
+  // Build backend options: Anthropic + providers with anthropicEndpoint AND a configured key
+  const backendOptions = [{ slug: 'anthropic', name: 'Anthropic' }];
+  if (settings?.builtinProviders && settings?.credentialStatuses) {
+    const statusMap = new Map(settings.credentialStatuses.map((s) => [s.key, s.isSet]));
+    for (const [slug, prov] of Object.entries(settings.builtinProviders)) {
+      if (slug === 'anthropic') continue;
+      if (!prov.anthropicEndpoint) continue;
+      const hasKey = prov.credentials.some((c) => statusMap.get(c.key));
+      if (hasKey) {
+        backendOptions.push({ slug, name: prov.name });
+      }
+    }
+  }
+
+  // Models for selected backend
+  const backendModels = getAgentModels(settings, backend);
 
   const handleToggle = async () => {
     await updateCodingAgentConfig('claude-code', { enabled: !config.enabled });
+    await onReload();
+  };
+
+  const handleBackendChange = async (e) => {
+    await updateCodingAgentConfig('claude-code', { backend: e.target.value, model: '' });
     await onReload();
   };
 
@@ -163,6 +183,12 @@ function ClaudeCodeCard({ settings, onReload }) {
     await updateCodingAgentConfig('claude-code', { model: e.target.value });
     await onReload();
   };
+
+  // Credential hint for third-party backends
+  const backendProvider = settings?.builtinProviders?.[backend];
+  const backendKeySet = backend !== 'anthropic' && backendProvider
+    ? settings.credentialStatuses?.find(s => s.key === backendProvider.credentials[0]?.key)?.isSet || false
+    : false;
 
   return (
     <div className="rounded-lg border bg-card p-4">
@@ -177,45 +203,81 @@ function ClaudeCodeCard({ settings, onReload }) {
 
       {config.enabled && (
         <div className="border-t border-border pt-3 space-y-3">
-          <div className="flex items-center justify-between">
-            <label className="text-sm font-medium">Auth Mode</label>
-            <div className="flex rounded-md border border-border overflow-hidden">
-              <button
-                onClick={() => handleAuthChange('oauth')}
-                className={`px-3 py-1.5 text-xs font-medium transition-colors ${
-                  config.auth === 'oauth'
-                    ? 'bg-foreground text-background'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-accent'
-                }`}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium">Backend API</label>
+              <select
+                value={backend}
+                onChange={handleBackendChange}
+                className="w-48 rounded-md border border-border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-foreground"
               >
-                OAuth Token
-              </button>
-              <button
-                onClick={() => handleAuthChange('api-key')}
-                className={`px-3 py-1.5 text-xs font-medium transition-colors ${
-                  config.auth === 'api-key'
-                    ? 'bg-foreground text-background'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-accent'
-                }`}
-              >
-                API Key
-              </button>
+                {backendOptions.map((b) => (
+                  <option key={b.slug} value={b.slug}>{b.name}</option>
+                ))}
+              </select>
             </div>
+            {backendOptions.length <= 1 && (
+              <p className="text-xs text-muted-foreground">
+                Claude Code also works with Anthropic-compatible APIs like DeepSeek and MiniMax.{' '}
+                <a href="/admin/event-handler/llms" className="underline hover:text-foreground transition-colors">
+                  Add a provider key
+                </a>{' '}
+                to unlock more backends.
+              </p>
+            )}
           </div>
 
-          {config.auth === 'oauth' ? (
-            <CredentialHint
-              ready={config.oauthTokenCount > 0}
-              readyText={`${config.oauthTokenCount} OAuth token${config.oauthTokenCount !== 1 ? 's' : ''} configured`}
-              missingText="Add an OAuth token on the LLMs page under Anthropic → OAuth Tokens"
-            />
+          <div className="border-t border-border pt-3 space-y-3">
+          {backend === 'anthropic' ? (
+            <>
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium">Auth Mode</label>
+                <div className="flex rounded-md border border-border overflow-hidden">
+                  <button
+                    onClick={() => handleAuthChange('oauth')}
+                    className={`px-3 py-1.5 text-xs font-medium transition-colors ${
+                      config.auth === 'oauth'
+                        ? 'bg-foreground text-background'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                    }`}
+                  >
+                    OAuth Token
+                  </button>
+                  <button
+                    onClick={() => handleAuthChange('api-key')}
+                    className={`px-3 py-1.5 text-xs font-medium transition-colors ${
+                      config.auth === 'api-key'
+                        ? 'bg-foreground text-background'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                    }`}
+                  >
+                    API Key
+                  </button>
+                </div>
+              </div>
+
+              {config.auth === 'oauth' ? (
+                <CredentialHint
+                  ready={config.oauthTokenCount > 0}
+                  readyText={`${config.oauthTokenCount} OAuth token${config.oauthTokenCount !== 1 ? 's' : ''} configured`}
+                  missingText="Add an OAuth token on the LLMs page under Anthropic → OAuth Tokens"
+                />
+              ) : (
+                <CredentialHint
+                  ready={config.anthropicKeySet}
+                  readyText="Anthropic API Key is set"
+                  missingText="Set your Anthropic API Key on the LLMs page"
+                />
+              )}
+            </>
           ) : (
             <CredentialHint
-              ready={config.anthropicKeySet}
-              readyText="Anthropic API Key is set"
-              missingText="Set your Anthropic API Key on the LLMs page"
+              ready={backendKeySet}
+              readyText={`${backendProvider?.name || backend} API Key is set`}
+              missingText={`Set your ${backendProvider?.name || backend} API Key on the LLMs page`}
             />
           )}
+          </div>
 
           <div className="border-t border-border pt-3">
             <div className="flex items-center justify-between">
@@ -226,7 +288,7 @@ function ClaudeCodeCard({ settings, onReload }) {
                 className="w-48 rounded-md border border-border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-foreground"
               >
                 <option value="">Default</option>
-                {anthropicModels.map((m) => (
+                {backendModels.map((m) => (
                   <option key={m.id} value={m.id}>{m.name}</option>
                 ))}
               </select>
@@ -671,8 +733,12 @@ function getAgentModels(settings, providerSlug) {
 function isClaudeCodeReady(settings) {
   const { claudeCode } = settings;
   if (!claudeCode?.enabled) return false;
-  if (claudeCode.auth === 'oauth') return claudeCode.oauthTokenCount > 0;
-  return claudeCode.anthropicKeySet;
+  const backend = claudeCode.backend || 'anthropic';
+  if (backend === 'anthropic') {
+    if (claudeCode.auth === 'oauth') return claudeCode.oauthTokenCount > 0;
+    return claudeCode.anthropicKeySet;
+  }
+  return isProviderReady(settings, backend);
 }
 
 function isPiReady(settings) {

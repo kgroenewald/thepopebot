@@ -1,80 +1,38 @@
-# Unified Coding Agent Docker Image — Plan
+# Unified Coding Agent Docker Image — Remaining Work
 
-## Architecture
+## What's Done
 
-Two axes, both selected at runtime:
-- **`RUNTIME`** — the workflow (job, headless, workspace, cluster-worker)
-- **`AGENT`** — the coding agent (claude-code, pi, opencode, gemini, etc.)
+Everything in the **agents** and **headless runtime** layers is complete:
 
-Base image has everything shared. Per-agent images extend it with one install + `ENV AGENT=<name>`.
-
-```
-coding-agent-base               →  Ubuntu 24.04, Node.js 22, GitHub CLI, ttyd, tmux, Playwright
-  ├── Dockerfile.claude-code    →  + Claude Code CLI (npm), ENV AGENT=claude-code
-  ├── Dockerfile.pi             →  + Pi CLI (npm), ENV AGENT=pi
-  ├── Dockerfile.opencode       →  + OpenCode CLI (curl/npm), ENV AGENT=opencode
-  └── Dockerfile.gemini         →  + Gemini CLI, ENV AGENT=gemini (future)
-```
-
-Entrypoint sources `/scripts/${RUNTIME}/*.sh` sequentially. Runtime scripts use `source` to call shared (`common/`) and agent-specific (`agents/${AGENT}/`) scripts. No symlinks, no build-time processing.
-
----
-
-## Done (built + tested)
-
-- [x] **Dockerfile** (base) — Ubuntu 24.04, system packages, GitHub CLI, ttyd, Node.js 22, Playwright Chromium, non-root `coding-agent` user
-- [x] **Dockerfile.claude-code** — extends base, installs Claude Code CLI, sets AGENT=claude-code
-- [x] **Dockerfile.pi** — extends base, installs Pi CLI, creates ~/.pi/agent, sets AGENT=pi
-- [x] **entrypoint.sh** — validates RUNTIME + AGENT, sources scripts in order, full env var reference
-- [x] **common/** — setup-git.sh, clone-or-reset.sh, feature-branch.sh, rebase-push.sh
-- [x] **agents/claude-code/** — auth.sh, setup.sh, run.sh, merge-back.sh, interactive.sh
-- [x] **agents/pi/** — auth.sh, setup.sh, run.sh, merge-back.sh, interactive.sh
-- [x] **headless/ runtime** — 7 numbered scripts wiring common + agent steps
-- [x] **CLAUDE.md** — full configuration reference
-- [x] **test-headless.sh** — tested: headless + claude-code + plan mode ✅
-- [x] **test-headless-pi.sh** — tested: headless + pi + anthropic auto-detect ✅
+| Component | Status |
+|-----------|--------|
+| **Base Dockerfile** | Done — Ubuntu 24.04, Node.js 22, GitHub CLI, ttyd, tmux, Playwright |
+| **Dockerfile.claude-code** | Done |
+| **Dockerfile.pi** | Done |
+| **Dockerfile.gemini-cli** | Done |
+| **Dockerfile.codex-cli** | Done |
+| **Dockerfile.opencode** | Done |
+| **entrypoint.sh** | Done — validates RUNTIME + AGENT, sources numbered scripts, pretty-prints stages |
+| **common/** scripts | Done — setup-git, clone-or-reset, feature-branch, rebase-push |
+| **agents/claude-code/** | Done — auth, setup, run, merge-back, interactive |
+| **agents/pi/** | Done — auth, setup, run, merge-back, interactive |
+| **agents/gemini/** | Done — auth, setup, run, merge-back, interactive |
+| **agents/codex/** | Done — auth, setup, run, merge-back, interactive |
+| **agents/opencode/** | Done — auth, setup, run, merge-back, interactive |
+| **headless/ runtime** | Done — 7 numbered scripts |
+| **CLAUDE.md** | Done |
+| **Settings UI** | Done — all 5 agents, enable/disable, auth mode, provider, model, credential status |
+| **Server actions** | Done — getCodingAgentSettings, updateCodingAgentConfig, setCodingAgentDefault |
+| **test-headless.sh** | Tested — headless + claude-code + plan mode |
+| **test-headless-pi.sh** | Tested — headless + pi + anthropic auto-detect |
 
 ---
 
-## Remaining: New Agents
-
-### OpenCode
-
-Install: `npm i -g opencode-ai` or `curl -fsSL https://opencode.ai/install | bash`
-
-Key differences from Claude Code / Pi:
-- **Headless invocation**: `opencode run "prompt"` (not `-p`)
-- **Model flag**: `--model provider/model` (combined format, e.g. `--model anthropic/claude-sonnet-4-6`)
-- **Output format**: `--format json`
-- **Session continue**: `-c` (same as others)
-- **Auth**: `opencode auth login` or config file with `{env:VARIABLE_NAME}` syntax
-- **System prompt**: TBD — needs investigation (may use AGENTS.md like Pi, or config)
-- **Permissions**: Built-in "build" (full access) and "plan" (read-only) agents, selected via `--agent`
-- **Config**: `OPENCODE_CONFIG_CONTENT` env var for inline JSON config — useful for Docker
-
-Files needed:
-- [ ] `Dockerfile.opencode`
-- [ ] `agents/opencode/auth.sh` — write config with API key from env vars
-- [ ] `agents/opencode/setup.sh` — system prompt, provider config via OPENCODE_CONFIG_CONTENT
-- [ ] `agents/opencode/run.sh` — `opencode run "$PROMPT" --model ... --format json`
-- [ ] `agents/opencode/merge-back.sh`
-- [ ] `agents/opencode/interactive.sh`
-- [ ] Test: headless + opencode
-
-### Gemini CLI
-
-- [ ] Investigate Gemini CLI (google/gemini-cli) — install, flags, headless mode, auth
-- [ ] `Dockerfile.gemini`
-- [ ] `agents/gemini/` scripts
-- [ ] Test: headless + gemini
-
----
-
-## Remaining: Runtimes
+## Remaining: Runtime Scripts
 
 ### job/
 
-Port the existing `claude-code-job` + `pi-coding-agent-job` entrypoints into the new format.
+Port the existing `claude-code-job` + `pi-coding-agent-job` entrypoints into the unified format.
 
 - [ ] `job/1_unpack-secrets.sh` — SECRETS/LLM_SECRETS JSON → env vars
 - [ ] `job/2_setup-git.sh` — source common/setup-git.sh
@@ -112,9 +70,9 @@ Port the existing `claude-code-job` + `pi-coding-agent-job` entrypoints into the
 
 ---
 
-## After: Caller Updates
+## Remaining: Caller Updates
 
-These changes happen in the npm package source code after the image is built and tested.
+These happen in the npm package after runtime scripts are built and tested.
 
 - [ ] **Volume mount scope** — change from `/home/coding-agent/workspace` to `/home/coding-agent` in `lib/tools/docker.js` so agent sessions persist for CONTINUE_SESSION
 - [ ] **Image references** — update callers to use unified image tags + pass RUNTIME env var:
@@ -128,10 +86,24 @@ These changes happen in the npm package source code after the image is built and
 
 ---
 
+## Remaining: Testing Matrix
+
+Not all runtime × agent combinations need testing, but the key ones do:
+
+| Runtime | claude-code | pi | gemini | codex | opencode |
+|---------|:-----------:|:--:|:------:|:-----:|:--------:|
+| **headless** | ✅ tested | ✅ tested | untested | untested | untested |
+| **job** | not built | not built | — | — | — |
+| **workspace** | not built | not built | — | — | — |
+| **cluster-worker** | not built | not built | — | — | — |
+
+Priority testing: headless for gemini/codex/opencode, then job + workspace + cluster-worker for claude-code and pi.
+
+---
+
 ## Notes
 
-- **PERMISSION** — only Claude Code supports plan/code mode natively. Pi has no built-in permission system (could be done via extensions, out of scope). OpenCode has built-in "plan" and "build" agents.
-- **SYSTEM_PROMPT** — agent-specific handling. Claude Code: `--append-system-prompt`. Pi: `.pi/SYSTEM.md` (cleared each run if empty). OpenCode: TBD.
-- **CONTINUE_SESSION=1** — adds `-c` to agent CLI. Requires volume at `/home/coding-agent`. Saves ~40% tokens on multi-step workflows.
-- **CUSTOM_OPENAI_BASE_URL** — triggers `models.json` generation for Pi custom providers. This is the only time `--provider custom` is passed to Pi. Built-in providers auto-detect from API keys.
-- **Pi --provider flag** — only used for custom providers (triggered by CUSTOM_OPENAI_BASE_URL). Built-in providers auto-detect.
+- **PERMISSION** — Claude Code: plan/code. Gemini CLI: plan/yolo. Codex CLI: always full-auto. Pi/OpenCode: no permission system.
+- **SYSTEM_PROMPT** — Claude Code: `--append-system-prompt`. Pi: `.pi/SYSTEM.md`. Gemini: `~/.gemini/SYSTEM.md`. Codex/OpenCode: AGENTS.md file.
+- **CONTINUE_SESSION=1** — adds `-c` to agent CLI. Requires volume at `/home/coding-agent`.
+- **CUSTOM_OPENAI_BASE_URL** — triggers `models.json` generation for Pi custom providers. Only time `--provider custom` is passed to Pi.
