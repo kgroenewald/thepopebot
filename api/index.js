@@ -238,7 +238,7 @@ async function handleOAuthCallback(request) {
 
   try {
     const state = parseOAuthState(stateParam);
-    const redirectUri = `${process.env.NEXTAUTH_URL || process.env.BASE_URL}/api/oauth/callback`;
+    const redirectUri = `${process.env.AUTH_URL}/api/oauth/callback`;
 
     const tokenData = await exchangeCodeForToken({
       code,

@@ -8,7 +8,6 @@ import {
   getAgentJobSecrets,
   updateAgentJobSecret,
   deleteAgentJobSecretAction,
-  getOAuthRedirectUri,
   initiateOAuthFlow,
 } from '../actions.js';
 
@@ -162,7 +161,7 @@ function AddOAuthSecretDialog({ open, onCancel, onSuccess }) {
       setError(null);
       setStatus('form');
       setCopied(false);
-      getOAuthRedirectUri().then(setRedirectUri).catch(() => {});
+      setRedirectUri(`${window.location.origin}/api/oauth/callback`);
       setTimeout(() => nameRef.current?.focus(), 50);
     }
     return () => {
@@ -325,14 +324,14 @@ function AddOAuthSecretDialog({ open, onCancel, onSuccess }) {
             </div>
             <div>
               <label className="text-xs font-medium mb-1 block">Scopes</label>
-              <input
-                type="text"
+              <textarea
                 value={scopes}
                 onChange={(e) => setScopes(e.target.value)}
                 placeholder="Space-separated scopes"
-                className={inputClass}
+                rows={3}
+                className={`${inputClass} resize-y`}
               />
-              <p className="text-xs text-muted-foreground mt-1">Prefilled from the selected package. Edit if needed.</p>
+              <p className="text-xs text-muted-foreground mt-1">Predefined scopes. Edit if needed.</p>
             </div>
             <div>
               <label className="text-xs font-medium mb-1 block">Redirect URI</label>

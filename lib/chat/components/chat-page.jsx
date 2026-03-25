@@ -20,6 +20,7 @@ export function ChatPage({ session, needsSetup, chatId }) {
   const [resolvedChatId, setResolvedChatId] = useState(() => chatId ? null : uuidv4());
   const [initialMessages, setInitialMessages] = useState([]);
   const [workspace, setWorkspace] = useState(null);
+  const [chatMode, setChatMode] = useState(null);
 
   const navigateToChat = useCallback((id) => {
     if (id) {
@@ -29,6 +30,7 @@ export function ChatPage({ session, needsSetup, chatId }) {
       window.history.pushState({}, '', '/');
       setInitialMessages([]);
       setWorkspace(null);
+      setChatMode(null);
       setActiveChatId(null);
       setResolvedChatId(uuidv4());
     }
@@ -43,6 +45,7 @@ export function ChatPage({ session, needsSetup, chatId }) {
       } else {
         setInitialMessages([]);
         setWorkspace(null);
+        setChatMode(null);
         setActiveChatId(null);
         setResolvedChatId(uuidv4());
       }
@@ -96,13 +99,15 @@ export function ChatPage({ session, needsSetup, chatId }) {
           }
           setInitialMessages(uiMessages);
 
-          // Check if this is a code chat
+          // Load chat data (workspace + chat mode)
           try {
             const r = await fetch(`/chat/${activeChatId}/data`);
             const chat = await r.json();
             setWorkspace(chat?.workspace || null);
+            setChatMode(chat?.chatMode || null);
           } catch {
             setWorkspace(null);
+            setChatMode(null);
           }
 
           setResolvedChatId(activeChatId);
@@ -130,6 +135,7 @@ export function ChatPage({ session, needsSetup, chatId }) {
               chatId={resolvedChatId}
               initialMessages={initialMessages}
               workspace={workspace}
+              chatMode={chatMode}
             />
           )}
         </SidebarInset>

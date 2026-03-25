@@ -21,11 +21,11 @@ const fetchBranches = (repoFullName) =>
     .then(r => r.json())
     .catch(() => []);
 
-export function Chat({ chatId, initialMessages = [], workspace = null }) {
+export function Chat({ chatId, initialMessages = [], workspace = null, chatMode = null }) {
   const [input, setInput] = useState('');
   const [files, setFiles] = useState([]);
   const hasNavigated = useRef(false);
-  const [codeMode, setCodeMode] = useState(!!workspace);
+  const [codeMode, setCodeMode] = useState(chatMode === 'code');
   const [codeModeType, setCodeModeType] = useState(() => {
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem(`codeModeType:${chatId}`);
