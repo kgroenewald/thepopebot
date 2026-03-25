@@ -86,20 +86,10 @@ if [ ! -d "/scripts/agents/${AGENT}" ]; then
     exit 1
 fi
 
-# Send all setup output to stderr so only the agent's stream-json hits stdout
-exec 3>&1 1>&2
-
 for script in /scripts/${RUNTIME}/*.sh; do
     # Transform "1_setup-git.sh" → "Setup Git"
     pretty=$(basename "$script" .sh | sed 's/^[0-9]*_//' | sed 's/[-_]/ /g' | awk '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) substr($i,2)}1')
     echo "→ ${pretty}"
 
-    # Restore stdout for agent-run, redirect back after
-    if [[ "$script" == *agent-run.sh ]]; then
-        exec 1>&3 3>&-
-        source "$script"
-        exec 3>&1 1>&2
-    else
-        source "$script"
-    fi
+    source "$script"
 done
