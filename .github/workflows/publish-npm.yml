@@ -99,6 +99,8 @@ jobs:
             dockerfile: docker/coding-agent/Dockerfile.codex-cli
           - image: coding-agent-opencode
             dockerfile: docker/coding-agent/Dockerfile.opencode
+          - image: coding-agent-kimi-cli
+            dockerfile: docker/coding-agent/Dockerfile.kimi-cli
     steps:
       - uses: actions/checkout@v4
 
