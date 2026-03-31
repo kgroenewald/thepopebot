@@ -63,6 +63,7 @@ services:
       RUNNER_SCOPE: repo
       LABELS: self-hosted
       EPHEMERAL: "1"
+      DISABLE_AUTO_UPDATE: "true"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - .:/project
