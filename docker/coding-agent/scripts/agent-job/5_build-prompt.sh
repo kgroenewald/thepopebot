@@ -13,17 +13,17 @@ LOG_DIR="/home/coding-agent/workspace/logs/${AGENT_JOB_ID}"
 mkdir -p "$LOG_DIR"
 export LOG_DIR
 
-# Build system prompt from SOUL.md + AGENT_JOB.md
+# Build system prompt from SOUL.md + SYSTEM.md
 SYSTEM_PROMPT_FILE="${LOG_DIR}/system-prompt.md"
 > "$SYSTEM_PROMPT_FILE"
 
-if [ -f "config/agent-job/SOUL.md" ]; then
-    cat "config/agent-job/SOUL.md" >> "$SYSTEM_PROMPT_FILE"
+if [ -f "agent-job/SOUL.md" ]; then
+    cat "agent-job/SOUL.md" >> "$SYSTEM_PROMPT_FILE"
     echo -e "\n\n" >> "$SYSTEM_PROMPT_FILE"
 fi
 
-if [ -f "config/agent-job/AGENT_JOB.md" ]; then
-    cat "config/agent-job/AGENT_JOB.md" >> "$SYSTEM_PROMPT_FILE"
+if [ -f "agent-job/SYSTEM.md" ]; then
+    cat "agent-job/SYSTEM.md" >> "$SYSTEM_PROMPT_FILE"
 fi
 
 # Resolve {{datetime}} template variable

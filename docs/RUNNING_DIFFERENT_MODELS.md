@@ -28,7 +28,7 @@ See [CODING_AGENTS.md](CODING_AGENTS.md) for details.
 
 ## Per-Job Overrides
 
-Add `llm_provider` and `llm_model` to any agent-type entry in `config/CRONS.json` or any action in `config/TRIGGERS.json`. This overrides the default for just that one job:
+Add `llm_provider` and `llm_model` to any agent-type entry in `agent-job/CRONS.json` or any action in `event-handler/TRIGGERS.json`. This overrides the default for just that one job:
 
 ```json
 {
@@ -92,6 +92,6 @@ Set this as the base URL when adding a custom provider in the admin UI. Most loc
 | Chat model (web chat, Telegram, webhooks) | Admin > Event Handler > Chat |
 | API keys and providers | Admin > Event Handler > LLMs |
 | Coding agent model (workspaces, jobs) | Admin > Event Handler > Coding Agents |
-| Per-job override | `llm_provider` + `llm_model` in `config/CRONS.json` or `config/TRIGGERS.json` |
+| Per-job override | `llm_provider` + `llm_model` in `agent-job/CRONS.json` or `event-handler/TRIGGERS.json` |
 | Custom provider (cloud) | Admin > Event Handler > LLMs > Add custom provider with base URL |
 | Custom provider (local) | Same as above, use `http://host.docker.internal:<port>/v1` as base URL |

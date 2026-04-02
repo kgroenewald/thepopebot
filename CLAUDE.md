@@ -8,8 +8,8 @@ Technical reference for AI assistants modifying the thepopebot NPM package sourc
 
 The npm package (`api/`, `lib/`, `config/`, `bin/`) is published to npm. In production:
 
-- **Event handler**: Docker image bakes the npm package, Next.js app source (`web/`), and `.next` build output. User project directories (`config/`, `skills/`, `.env`, `data/`, etc.) are individually volume-mounted into `/app`. The full project is also mounted at `/project` for git access. Runs `server.js` via PM2 behind Traefik reverse proxy.
-- **`lib/paths.js`**: Central path resolver — ALL paths resolve from `process.cwd()`. This is how the installed npm package finds the volume-mounted user project files.
+- **Event handler**: Docker image bakes the npm package, Next.js app source (`web/`), and `.next` build output. User project directories (`agent-job/`, `event-handler/`, `skills/`, `.env`, `data/`, etc.) are individually volume-mounted into `/app`. The full project is also mounted at `/project` for git access. Runs `server.js` via PM2 behind Traefik reverse proxy.
+- **`lib/paths.js`**: Exports `PROJECT_ROOT` (`process.cwd()`). This is how the installed npm package finds the volume-mounted user project files.
 - **Agent-job containers**: Ephemeral Docker containers clone `agent-job/*` branches separately — use named volumes for workspace. See `docker/CLAUDE.md`.
 - **Local install**: Gives users CLI tools (`init`, `setup`, `upgrade`) and configuration scaffolding.
 
@@ -20,7 +20,7 @@ All event handler logic, API routes, library code, and core functionality lives 
 The `templates/` directory contains **only files that get scaffolded into user projects** via `npx thepopebot init`. Templates are for user-editable configuration and thin wiring — things users are expected to customize or override. Never add core logic to templates.
 
 **When adding or modifying event handler code, always put it in the package itself (e.g., `api/`, `lib/`), not in `templates/`.** Templates should only contain:
-- Configuration files users edit (`config/agent-job/SOUL.md`, `config/CRONS.json`, etc.)
+- Configuration files users edit (`agent-job/SOUL.md`, `agent-job/CRONS.json`, `event-handler/TRIGGERS.json`, etc.)
 - GitHub Actions workflows
 - Docker compose (`docker-compose.yml`)
 - CLAUDE.md files for AI assistant context in user projects
@@ -45,7 +45,7 @@ Files in managed directories are auto-synced (created, updated, **and deleted**)
 │   ├── actions.js              # Shared action executor (agent, command, webhook)
 │   ├── cron.js                 # Cron scheduler (loads CRONS.json)
 │   ├── triggers.js             # Webhook trigger middleware (loads TRIGGERS.json)
-│   ├── paths.js                # Central path resolver (resolves from process.cwd())
+│   ├── paths.js                # Exports PROJECT_ROOT (process.cwd())
 │   ├── ai/                     # LLM integration (agent, model, tools, streaming)
 │   ├── auth/                   # NextAuth config, helpers, middleware, server actions, components
 │   ├── channels/               # Channel adapters (base class, Telegram, factory)
@@ -134,7 +134,7 @@ Plugin directories under `skills/`. Activate by symlinking into `skills/active/`
 
 ## Template Config & Markdown Includes
 
-See `config/CLAUDE.md` for config file details and the `{{ include }}` / `{{variable}}` system.
+Config markdown files support `{{ filepath.md }}` includes (resolved relative to project root) and built-in variables (`{{datetime}}`, `{{skills}}`), powered by `lib/utils/render-md.js`.
 
 ## Config Variable Architecture
 

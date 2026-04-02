@@ -5,12 +5,12 @@
 Two agent singletons, both using `createReactAgent` from `@langchain/langgraph/prebuilt` with `SqliteSaver` for conversation memory:
 
 **Agent Chat** — singleton via `getAgentChat()`:
-- System prompt: `config/agent-chat/SYSTEM.md` (rendered fresh each invocation via `render_md()`)
+- System prompt: `event-handler/agent-chat/SYSTEM.md` (rendered fresh each invocation via `render_md()`)
 - Tools: `agent_job`, `coding_agent`
 - Call `resetAgentChats()` to clear both singletons (required if hot-reloading)
 
 **Code Chat** — singleton via `getCodeChat()`:
-- System prompt: `config/code-chat/SYSTEM.md` (rendered fresh each invocation)
+- System prompt: `event-handler/code-chat/SYSTEM.md` (rendered fresh each invocation)
 - Tools: `coding_agent` (reads repo/branch/workspace from `runtime.configurable`)
 
 ## Adding a New Tool

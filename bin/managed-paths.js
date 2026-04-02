@@ -8,12 +8,9 @@ export const MANAGED_PATHS = [
   'docker-compose.yml',
   '.dockerignore',
   '.gitignore',
-  'CLAUDE.md',
-  'config/CLAUDE.md',
+  'agent-job/CLAUDE.md',
+  'event-handler/CLAUDE.md',
   'skills/CLAUDE.md',
-  'cron/CLAUDE.md',
-  'triggers/CLAUDE.md',
-  'docs/',
 ];
 
 export function isManaged(relPath) {

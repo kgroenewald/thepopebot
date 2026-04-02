@@ -18,14 +18,12 @@ services:
     image: ${EVENT_HANDLER_IMAGE_URL:-stephengpope/thepopebot:event-handler-${THEPOPEBOT_VERSION:-latest}}
     volumes:
       - .:/project
-      - ./config:/app/config
+      - ./agent-job:/app/agent-job
+      - ./event-handler:/app/event-handler
       - ./skills:/app/skills
       - ./.env:/app/.env
       - ./data:/app/data
       - ./logs:/app/logs
-      - ./cron:/app/cron
-      - ./triggers:/app/triggers
-      - ./CLAUDE.md:/app/CLAUDE.md
       - ./traefik-config:/traefik-config
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
@@ -48,7 +46,7 @@ services:
     image: ghcr.io/berriai/litellm:main-latest
     command: --config /litellm/main.yaml --port 4000
     volumes:
-      - ./config/litellm:/litellm:ro
+      - ./event-handler/litellm:/litellm:ro
     restart: unless-stopped
 
   runner:

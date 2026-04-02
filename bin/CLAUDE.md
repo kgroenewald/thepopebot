@@ -21,7 +21,7 @@ Entry point: `cli.js` (invoked via `npx thepopebot <command>`).
 
 `managed-paths.js` defines files auto-synced by `init`. These are overwritten on every init/upgrade — users should not edit them.
 
-**Managed paths**: `.github/workflows/`, `docker-compose.yml`, `.dockerignore`, `.gitignore`, `CLAUDE.md`, `config/CLAUDE.md`, `skills/CLAUDE.md`, `cron/CLAUDE.md`, `triggers/CLAUDE.md`, `docs/CLAUDE.md`.
+**Managed paths**: `.github/workflows/`, `docker-compose.yml`, `.dockerignore`, `.gitignore`, `agent-job/CLAUDE.md`, `event-handler/CLAUDE.md`, `skills/CLAUDE.md`.
 
 `isManaged(relPath)` — returns true if a path is managed (exact match or directory prefix).
 

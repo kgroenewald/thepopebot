@@ -106,7 +106,7 @@ The wizard walks you through everything:
 - **Web Chat**: Visit your APP_URL to chat with your agent, create jobs, upload files
 - **Telegram** (optional): Run `npm run setup-telegram` to connect a Telegram bot
 - **Webhook**: Send a POST to `/api/create-agent-job` with your API key to create jobs programmatically
-- **Cron**: Edit `config/CRONS.json` to schedule recurring jobs
+- **Cron**: Edit `agent-job/CRONS.json` to schedule recurring jobs
 
 ### Chat vs Agent LLM
 

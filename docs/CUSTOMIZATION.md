@@ -2,19 +2,26 @@
 
 ## The Operating System
 
-The `config/` directory is the agent's brain — it defines who the agent is and how it behaves.
+Two directories define who the agent is and how it behaves:
+
+**`agent-job/`** — Docker agent job configuration:
+
+| File | Purpose |
+|------|---------|
+| `SOUL.md` | Agent identity, personality traits, and values |
+| `SYSTEM.md` | Agent runtime environment |
+| `HEARTBEAT.md` | Self-monitoring behavior |
+| `CRONS.json` | Scheduled job definitions |
+
+**`event-handler/`** — Event handler configuration:
 
 | File | Purpose |
 |------|---------|
 | `agent-chat/SYSTEM.md` | Agent chat system prompt |
 | `code-chat/SYSTEM.md` | Code workspace planning system prompt |
-| `agent-job/SOUL.md` | Agent identity, personality traits, and values |
-| `agent-job/AGENT_JOB.md` | Agent runtime environment |
-| `agent-job/SUMMARY.md` | Prompt for summarizing completed jobs |
-| `cluster/SYSTEM.md` | System prompt for cluster worker agents |
-| `cluster/ROLE.md` | Per-role prompt template for cluster workers |
-| `HEARTBEAT.md` | Self-monitoring behavior |
-| `CRONS.json` | Scheduled job definitions |
+| `SUMMARY.md` | Prompt for summarizing completed jobs |
+| `clusters/SYSTEM.md` | System prompt for cluster worker agents |
+| `clusters/ROLE.md` | Per-role prompt template for cluster workers |
 | `TRIGGERS.json` | Webhook trigger definitions |
 
 Each agent job automatically gets its own `logs/<AGENT_JOB_ID>/agent-job.config.json` file created by the event handler. Jobs are created via Telegram chat, webhooks, or cron schedules.
@@ -78,7 +85,7 @@ API keys are managed at Admin > Event Handler > Webhooks.
 
 ### Scheduled Jobs
 
-Define recurring jobs in `config/CRONS.json`:
+Define recurring jobs in `agent-job/CRONS.json`:
 
 ```json
 [

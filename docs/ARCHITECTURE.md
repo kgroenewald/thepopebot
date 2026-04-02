@@ -57,27 +57,26 @@ This is the user project structure after running `npx thepopebot init`:
 ├── .pi/
 │   ├── extensions/                # Pi extensions (env-sanitizer for secret filtering)
 │   └── skills/                    # Custom skills for the agent
-├── config/
+├── agent-job/
+│   ├── SOUL.md                    # Agent identity and personality
+│   ├── SYSTEM.md                  # Agent runtime environment
+│   ├── HEARTBEAT.md               # Self-monitoring
+│   └── CRONS.json                 # Scheduled jobs
+├── event-handler/
 │   ├── agent-chat/
 │   │   └── SYSTEM.md              # Agent chat system prompt
 │   ├── code-chat/
 │   │   └── SYSTEM.md              # Code workspace planning prompt
-│   ├── agent-job/
-│   │   ├── SOUL.md                # Agent identity and personality
-│   │   ├── AGENT_JOB.md           # Agent runtime environment
-│   │   └── SUMMARY.md             # Agent job summary prompt
-│   ├── cluster/
+│   ├── clusters/
 │   │   ├── SYSTEM.md              # Cluster system prompt
 │   │   └── ROLE.md                # Cluster role prompt
-│   ├── HEARTBEAT.md               # Self-monitoring
-│   ├── CRONS.json                 # Scheduled jobs
+│   ├── litellm/
+│   │   └── main.yaml              # LiteLLM proxy config
+│   ├── SUMMARY.md                 # Agent job summary prompt
 │   └── TRIGGERS.json              # Webhook trigger definitions
 ├── docker-compose.yml             # Production deployment (Traefik + event handler)
 ├── data/                          # SQLite database and cluster data
-├── docs/                          # Project documentation
 ├── middleware.js                   # Auth middleware (re-exports from thepopebot)
-├── cron/                          # Working dir for command-type cron jobs
-├── triggers/                      # Working dir for command-type trigger scripts
 ├── skills/                        # Plugin directories (activate via skills/active/ symlinks)
 ├── logs/                          # Per-job directories (agent-job.config.json + session logs)
 ├── next.config.mjs                # Next.js config (wraps withThepopebot)

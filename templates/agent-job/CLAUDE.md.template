@@ -1,0 +1,34 @@
+# agent-job/ — Agent Job Configuration
+
+This directory contains configuration files for Docker agent jobs. These files are **not managed** — your changes are preserved across upgrades.
+
+## File Reference
+
+### System Prompts
+
+| File | Used By | Purpose |
+|------|---------|---------|
+| `SOUL.md` | Docker agent | Agent personality, identity, and values. Included in agent job system prompts. |
+| `SYSTEM.md` | Docker agent | Runtime environment documentation injected into the agent's context. |
+| `HEARTBEAT.md` | Heartbeat cron | Self-monitoring prompt for the agent's periodic heartbeat job. |
+
+### Scheduling
+
+| File | Purpose |
+|------|---------|
+| `CRONS.json` | Scheduled job definitions — loaded at server startup by `node-cron`. |
+
+## Template Variables
+
+Config markdown files support includes and built-in variables (processed by `render-md.js` at runtime):
+
+| Syntax | Description |
+|--------|-------------|
+| `{{ filepath.md }}` | Include another file (path relative to project root, recursive with circular detection) |
+| `{{datetime}}` | Current ISO timestamp |
+| `{{skills}}` | Dynamic bullet list of active skill descriptions from `skills/active/*/SKILL.md` frontmatter |
+
+## When Changes Take Effect
+
+- **Prompt files** (`.md`) — Changes take effect immediately on the next LLM call. No restart needed.
+- **CRONS.json** — Requires a server restart to reload schedules.

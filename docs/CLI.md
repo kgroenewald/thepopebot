@@ -10,8 +10,8 @@ When you ran `thepopebot init` the first time, it scaffolded a project folder wi
 
 | Files | What they do |
 |-------|-------------|
-| `config/agent-job/SOUL.md`, `AGENT_JOB.md`, `SUMMARY.md`, etc. | Your agent's personality, behavior, and prompts |
-| `config/CRONS.json`, `TRIGGERS.json` | Your scheduled jobs and webhook triggers |
+| `agent-job/SOUL.md`, `SYSTEM.md`, `CRONS.json`, etc. | Your agent's personality, behavior, prompts, and scheduled jobs |
+| `event-handler/TRIGGERS.json`, `SUMMARY.md`, etc. | Your webhook triggers and event handler prompts |
 
 **Managed files** — These are infrastructure files that need to stay in sync with the package version. `init` auto-updates them for you:
 
@@ -32,7 +32,7 @@ When you ran `thepopebot init` the first time, it scaffolded a project folder wi
 Updated templates available:
 These files differ from the current package templates.
 
-  config/CRONS.json
+  agent-job/CRONS.json
 
 To view differences:  npx thepopebot diff <file>
 To reset to default:  npx thepopebot reset <file>
@@ -41,8 +41,8 @@ To reset to default:  npx thepopebot reset <file>
 You can review at your own pace:
 
 ```bash
-npx thepopebot diff config/CRONS.json    # see what changed
-npx thepopebot reset config/CRONS.json   # accept the new template
+npx thepopebot diff agent-job/CRONS.json    # see what changed
+npx thepopebot reset agent-job/CRONS.json   # accept the new template
 ```
 
 ### If you've modified managed files
