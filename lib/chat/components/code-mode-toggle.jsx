@@ -8,13 +8,16 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import { cn } from '../utils.js';
 import { CodeLogView } from './code-log-view.js';
 
-export const COMMAND_LABELS = {
-  'commit-branch': 'Commit Branch',
-  'push-branch': 'Push Branch',
-  'create-pr': 'Create PR',
-  'rebase-branch': 'Rebase Branch',
-  'resolve-conflicts': 'Resolve Conflicts',
-};
+/**
+ * Auto-generates display labels from command slug.
+ * Splits on hyphens, capitalizes each word. Words ≤2 chars are uppercased (e.g. pr → PR).
+ */
+export function getCommandLabel(slug) {
+  return slug
+    .split('-')
+    .map(word => word.length <= 2 ? word.toUpperCase() : word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
 
 /**
  * Repo/branch picker dropdowns for the empty state (below chat input).
@@ -244,6 +247,7 @@ const STORAGE_KEY = 'thepopebot-workspace-command';
 function WorkspaceCommandButton({ workspaceId, diffStats, onDiffStatsRefresh, onShowDiff }) {
   const [selectedCommand, setSelectedCommandState] = useState(() => {
     try { return localStorage.getItem(STORAGE_KEY) || 'create-pr'; } catch { return 'create-pr'; }
+
   });
   const setSelectedCommand = (cmd) => {
     setSelectedCommandState(cmd);
@@ -357,7 +361,7 @@ function WorkspaceCommandButton({ workspaceId, diffStats, onDiffStatsRefresh, on
                 Running...
               </span>
             ) : (
-              COMMAND_LABELS[selectedCommand]
+              getCommandLabel(selectedCommand)
             )}
           </button>
           <DropdownMenu>
@@ -371,15 +375,15 @@ function WorkspaceCommandButton({ workspaceId, diffStats, onDiffStatsRefresh, on
               </button>
             </DropdownMenuTrigger>
           <DropdownMenuContent side="top" align="end" className="whitespace-nowrap">
-            {['commit-branch', 'push-branch', 'create-pr'].map((cmd) => (
+            {['commit', 'push', 'create-pr'].map((cmd) => (
               <DropdownMenuItem key={cmd} onClick={() => setSelectedCommand(cmd)}>
-                {COMMAND_LABELS[cmd]}
+                {getCommandLabel(cmd)}
               </DropdownMenuItem>
             ))}
             <DropdownMenuSeparator />
-            {['rebase-branch', 'resolve-conflicts'].map((cmd) => (
+            {['pull'].map((cmd) => (
               <DropdownMenuItem key={cmd} onClick={() => setSelectedCommand(cmd)}>
-                {COMMAND_LABELS[cmd]}
+                {getCommandLabel(cmd)}
               </DropdownMenuItem>
             ))}
             </DropdownMenuContent>
@@ -389,7 +393,7 @@ function WorkspaceCommandButton({ workspaceId, diffStats, onDiffStatsRefresh, on
 
       {dialogOpen && (
         <CommandOutputDialog
-          title={COMMAND_LABELS[selectedCommand]}
+          title={getCommandLabel(selectedCommand)}
           logs={commandLogs}
           exitCode={commandExitCode}
           running={commandRunning}

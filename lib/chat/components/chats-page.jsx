@@ -267,6 +267,7 @@ function ChatRow({ chat, onNavigate, onDelete, onStar, onRename }) {
   const [editing, setEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(chat.title || '');
   const inputRef = useRef(null);
+  const menuRef = useRef(null);
 
   const showMenu = hovered || dropdownOpen;
 
@@ -304,6 +305,7 @@ function ChatRow({ chat, onNavigate, onDelete, onStar, onRename }) {
       onMouseLeave={() => setHovered(false)}
       onClick={(e) => {
         if (editing) { e.preventDefault(); return; }
+        if (menuRef.current && menuRef.current.contains(e.target)) { e.preventDefault(); return; }
         e.preventDefault();
         if (chat.codeWorkspaceId && chat.containerName) {
           window.location.href = `/code/${chat.codeWorkspaceId}`;
@@ -347,7 +349,7 @@ function ChatRow({ chat, onNavigate, onDelete, onStar, onRename }) {
         </span>
       </div>
       {!editing && (
-        <div className={cn(
+        <div ref={menuRef} className={cn(
           'shrink-0',
           showMenu ? 'opacity-100' : 'opacity-100 md:opacity-0 md:pointer-events-none'
         )}>

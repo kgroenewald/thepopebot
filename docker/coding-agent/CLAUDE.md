@@ -47,13 +47,12 @@ interactive/7_start-interactive.sh → source agents/${AGENT}/interactive.sh (ag
 
 `command/*` runtimes are ephemeral containers that run workspace commands on an existing volume. They don't clone — the workspace already exists.
 
-| Runtime | Purpose | Agent? |
-|---------|---------|--------|
-| `command/commit-branch` | Stage all changes, agent writes commit message, commit | Yes |
-| `command/push-branch` | Stage all changes, agent writes commit message, commit, push | Yes |
-| `command/create-pr` | Push feature branch, agent creates PR via `gh pr create` | Yes |
-| `command/rebase-branch` | Fetch and rebase onto base branch (no agent, no push) | No |
-| `command/resolve-conflicts` | Agent detects and resolves git conflicts | Yes |
+| Runtime | Purpose |
+|---------|---------|
+| `command/commit` | Agent stages all changes, reviews diff, writes commit message, commits |
+| `command/push` | Agent stages, commits, and pushes the branch to origin |
+| `command/create-pr` | Agent ensures changes are committed and pushed, then creates/updates a PR |
+| `command/pull` | Agent fetches from origin, rebases onto base branch, resolves any conflicts |
 
 ## Adding a New Coding Agent
 

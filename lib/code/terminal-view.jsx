@@ -8,7 +8,7 @@ import { WebLinksAddon } from '@xterm/addon-web-links';
 import { SerializeAddon } from '@xterm/addon-serialize';
 import '@xterm/xterm/css/xterm.css';
 import { SpinnerIcon, MicIcon } from '../chat/components/icons.js';
-import { COMMAND_LABELS, CommandOutputDialog } from '../chat/components/code-mode-toggle.js';
+import { getCommandLabel, CommandOutputDialog } from '../chat/components/code-mode-toggle.js';
 import { useVoiceInput } from '../voice/use-voice-input.js';
 import { VoiceBars } from '../chat/components/voice-bars.js';
 
@@ -882,7 +882,7 @@ function ToolbarCommandButton({ codeWorkspaceId, diffStats, onDiffStatsRefresh, 
             {commandRunning ? (
               <><SpinnerIcon size={12} /> Running...</>
             ) : (
-              COMMAND_LABELS[selectedCommand]
+              getCommandLabel(selectedCommand)
             )}
           </button>
           <button
@@ -897,23 +897,23 @@ function ToolbarCommandButton({ codeWorkspaceId, diffStats, onDiffStatsRefresh, 
         </div>
         {dropupOpen && (
           <div className="code-toolbar-dropup">
-            {['commit-branch', 'push-branch', 'create-pr'].map((cmd) => (
+            {['commit', 'push', 'create-pr'].map((cmd) => (
               <button
                 key={cmd}
                 className="code-toolbar-dropup-item"
                 onClick={() => { setSelectedCommand(cmd); setDropupOpen(false); }}
               >
-                {COMMAND_LABELS[cmd]}
+                {getCommandLabel(cmd)}
               </button>
             ))}
             <div className="code-toolbar-dropup-separator" />
-            {['rebase-branch', 'resolve-conflicts'].map((cmd) => (
+            {['pull'].map((cmd) => (
               <button
                 key={cmd}
                 className="code-toolbar-dropup-item"
                 onClick={() => { setSelectedCommand(cmd); setDropupOpen(false); }}
               >
-                {COMMAND_LABELS[cmd]}
+                {getCommandLabel(cmd)}
               </button>
             ))}
           </div>
@@ -922,7 +922,7 @@ function ToolbarCommandButton({ codeWorkspaceId, diffStats, onDiffStatsRefresh, 
 
       {dialogOpen && (
         <CommandOutputDialog
-          title={COMMAND_LABELS[selectedCommand]}
+          title={getCommandLabel(selectedCommand)}
           output={commandOutput}
           exitCode={commandExitCode}
           running={commandRunning}

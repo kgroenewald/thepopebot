@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { cn } from '../../utils.js';
 
 export function ConfirmDialog({ open, onConfirm, onCancel, title, description, confirmLabel = 'Delete', cancelLabel = 'Cancel', variant = 'destructive' }) {
@@ -23,10 +24,10 @@ export function ConfirmDialog({ open, onConfirm, onCancel, title, description, c
 
   if (!open) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center justify-center">
       <div className="fixed inset-0 bg-black/50" onClick={onCancel} />
-      <div className="relative z-50 w-full max-w-sm mx-4 rounded-lg border border-border bg-background p-6 shadow-lg" onClick={(e) => e.stopPropagation()}>
+      <div className="relative z-[100] w-full max-w-sm mx-4 rounded-lg border border-border bg-background p-6 shadow-lg" onClick={(e) => e.stopPropagation()}>
         <h3 className="text-lg font-semibold">{title}</h3>
         {description && (
           <p className="mt-2 text-sm text-muted-foreground">{description}</p>
@@ -52,6 +53,7 @@ export function ConfirmDialog({ open, onConfirm, onCancel, title, description, c
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
